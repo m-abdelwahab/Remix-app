@@ -1,6 +1,6 @@
 import type { Password, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { prisma } from '~/utils/db.server';
+import { prisma } from '~/global/prisma.server';
 export type { User } from '@prisma/client';
 
 export async function getUserById(userId: User['id']) {
@@ -29,7 +29,7 @@ export async function deleteUser(userId: User['id']) {
 
 export async function enrollTotp(
   userId: User['id'],
-  totpFactorId: User['totpFactorId']
+  totpFactorId: User['totpFactorId'],
 ) {
   return await prisma.user.update({
     where: {
@@ -43,7 +43,7 @@ export async function enrollTotp(
 
 export async function enrollSMS(
   userId: User['id'],
-  smsFactorId: User['smsFactorId']
+  smsFactorId: User['smsFactorId'],
 ) {
   return await prisma.user.update({
     where: {
@@ -70,7 +70,7 @@ export async function disable2FA(userId: User['id']) {
 export async function updatePassword(
   userId: User['id'],
   currentPassword: string,
-  newPassword: string
+  newPassword: string,
 ) {
   const userWithPassword = await prisma.user.findUnique({
     where: {
@@ -87,7 +87,7 @@ export async function updatePassword(
 
   const isValid = await bcrypt.compare(
     currentPassword,
-    userWithPassword.password.hash
+    userWithPassword.password.hash,
   );
 
   if (!isValid) {
@@ -127,7 +127,7 @@ export async function createUser(email: User['email'], password: string) {
 
 export async function verifyLogin(
   email: User['email'],
-  password: Password['hash']
+  password: Password['hash'],
 ) {
   const userWithPassword = await prisma.user.findUnique({
     where: { email },
@@ -142,7 +142,7 @@ export async function verifyLogin(
 
   const isValid = await bcrypt.compare(
     password,
-    userWithPassword.password.hash
+    userWithPassword.password.hash,
   );
 
   if (!isValid) {

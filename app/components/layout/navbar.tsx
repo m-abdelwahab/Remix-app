@@ -1,14 +1,14 @@
 import { Fragment } from 'react';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Form, Link } from '@remix-run/react';
-import { useOptionalUser } from '~/utils';
 import {
   Cross2Icon,
   HamburgerMenuIcon,
   PersonIcon,
 } from '@radix-ui/react-icons';
+import { useOptionalUser } from '~/hooks/useOptionalUser';
 
-function classNames(...classes) {
+function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
@@ -76,7 +76,7 @@ export function Navbar() {
                                 to="/settings"
                                 className={classNames(
                                   active ? 'bg-gray-100' : '',
-                                  'hover:bg-gray-100 block px-4 py-2 text-sm text-gray-700'
+                                  'hover:bg-gray-100 block px-4 py-2 text-sm text-gray-700',
                                 )}
                               >
                                 Settings

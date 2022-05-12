@@ -7,7 +7,7 @@ import {
   disable2FA,
   getUserAuthFactors,
   updatePassword,
-} from '~/models/user.server';
+} from '~/prisma-actions/user.server';
 import {
   cookieSessionStorage,
   displayToast,
@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
       if (!currentPassword || !newPassword) {
         return json(
           { errors: { message: 'This field is required' } },
-          { status: 400 }
+          { status: 400 },
         );
       }
       const res = await updatePassword(user.id, currentPassword, newPassword);
@@ -55,7 +55,7 @@ export const action: ActionFunction = async ({ request }) => {
         displayToast(
           session,
           'Your password has been updated successfully',
-          'success'
+          'success',
         );
 
         return redirect('/settings', {

@@ -16,13 +16,11 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { Navbar } from './components/layout/navbar';
 import styles from './styles/app.css';
-import {
-  getSession,
-  getUser,
-  cookieSessionStorage,
-} from './utils/session.server';
-import type { ToastMessage } from './utils/session.server';
+import { getSession } from '~/auth/getSession';
+import { getUser } from '~/auth/getUser';
+import type { ToastMessage } from './auth/displayToast';
 import { useEffect } from 'react';
+import { cookieSessionStorage } from './auth/cookiesSessionStorage';
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: styles }];
@@ -61,7 +59,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       headers: {
         'Set-Cookie': await cookieSessionStorage.commitSession(session),
       },
-    }
+    },
   );
 };
 
