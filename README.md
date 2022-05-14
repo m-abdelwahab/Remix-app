@@ -2,6 +2,9 @@
 
 TODO
 
+- Refactor
+  - 
+
 - SMS verification form
   - add resend button
   - clean up UI

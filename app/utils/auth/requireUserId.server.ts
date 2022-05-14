@@ -1,5 +1,5 @@
 import { redirect } from '@remix-run/node';
-import { getUserId } from './getUserId';
+import { getUserId } from './getUserId.server';
 
 export async function requireUserId(
   request: Request,

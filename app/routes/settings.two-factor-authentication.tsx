@@ -1,11 +1,11 @@
 import { json } from '@remix-run/node';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-import { enrollSMS, enrollTotp } from '~/prisma-actions/user.server';
-import { displayToast } from '~/auth/displayToast';
-import { getSession } from '~/auth/getSession';
-import { requireUser } from '~/auth/requireUser';
-import { requireUserId } from '~/auth/requireUserId';
-import { workos } from '~/workos.server';
+import { enrollSMS, enrollTotp, updatePhoneNumber } from '~/models/user.server';
+import { displayToast } from '~/utils/displayToast.server';
+import { getSession } from '~/utils/auth/getSession.server';
+import { requireUser } from '~/utils/auth/requireUser.server';
+import { requireUserId } from '~/utils/auth/requireUserId.server';
+import { workos } from '~/lib/workos.server';
 import {
   SelectFactor,
   Verify,
@@ -32,9 +32,10 @@ export const action: ActionFunction = async ({ request }) => {
       }
       if (values.authFactorType === 'totp') {
         try {
+          // TODO: change issuer field to your app name
           const totpFactor = await workos.mfa.enrollFactor({
             type: 'totp',
-            issuer: user.email,
+            issuer: 'Remix with WorkOS',
             user: user.email,
           });
 
@@ -54,7 +55,8 @@ export const action: ActionFunction = async ({ request }) => {
       }
 
     case 'phoneNumber':
-      if (!values.phoneNumber) {
+      const { userId, phoneNumber } = values;
+      if (!phoneNumber) {
         return json(
           { errors: { message: 'You need to provide a phone number' } },
           { status: 400 },
@@ -64,12 +66,15 @@ export const action: ActionFunction = async ({ request }) => {
       try {
         const smsFactor = await workos.mfa.enrollFactor({
           type: 'sms',
-          phoneNumber: `${values.phoneNumber}`,
+          phoneNumber: `${phoneNumber}`,
         });
 
         const smsChallenge = await workos.mfa.challengeFactor({
           authenticationFactorId: smsFactor.id,
         });
+
+        // persistPhoneNumber
+        // await updatePhoneNumber(`${userId}`, `${phoneNumber}`);
 
         return { smsFactor, smsChallenge, step: 1 };
       } catch (error) {

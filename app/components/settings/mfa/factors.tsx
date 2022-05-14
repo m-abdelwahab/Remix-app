@@ -1,9 +1,8 @@
-import { Form, useLoaderData, useTransition } from '@remix-run/react';
+import { Form, useLoaderData } from '@remix-run/react';
 import { Button } from '~/components/shared/button';
 
 export const Factors = () => {
   const data = useLoaderData();
-  const transition = useTransition();
 
   return (
     <div>
@@ -13,15 +12,7 @@ export const Factors = () => {
             Two-factor authentication
           </h3>
           <Form method="post">
-            <Button
-              isLoading={
-                transition.state === 'submitting' &&
-                transition.submission.formData.get('_action') === 'toggle2FA'
-              }
-              size="small"
-              name="_action"
-              value="toggle2FA"
-            >
+            <Button size="small" name="_action" value="toggle2FA">
               {data?.totpFactorId || data?.smsFactorId ? 'Disable' : 'Enable'}
             </Button>
           </Form>

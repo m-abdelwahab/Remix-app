@@ -1,9 +1,16 @@
-import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import { Button } from './shared';
-import { TextInput } from './shared/text-input';
+import {
+  Form,
+  Link,
+  useActionData,
+  useSearchParams,
+  useTransition,
+} from '@remix-run/react';
+import { Button } from '../shared';
+import { TextInput } from '../shared/text-input';
 
 export const LoginForm = () => {
   const actionData = useActionData();
+  const transition = useTransition();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get('redirectTo') || '/';
 
@@ -54,7 +61,16 @@ export const LoginForm = () => {
       </div>
 
       <input type="hidden" name="redirectTo" value={redirectTo} />
-      <Button name="_action" value="login" type="submit">
+
+      <Button
+        name="_action"
+        value="login"
+        isLoading={
+          transition.state === 'submitting' &&
+          transition.submission.formData.get('_action') === 'login'
+        }
+        type="submit"
+      >
         Log in
       </Button>
       <div className="flex items-center justify-between">

@@ -1,5 +1,5 @@
 import { USER_SESSION_KEY } from './constants';
-import { getSession } from './getSession';
+import { getSession } from './getSession.server';
 
 export async function getUserId(request: Request): Promise<string | undefined> {
   const { session } = await getSession(request);

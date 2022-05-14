@@ -5,14 +5,13 @@ import type {
 } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useActionData } from '@remix-run/react';
-import { getUserId } from '~/auth/getUserId';
-import { createUserSession } from '~/auth/createUserSession';
-import { verifyLogin } from '~/prisma-actions/user.server';
-import { redirectSafely } from '~/utils/redirectSafely';
-import { validateEmail } from '~/utils/validateEmail';
-import { workos } from '~/workos.server';
-import { LoginForm } from '~/components/login-form';
-import { SMSForm, TOTPForm, FormSwitcher } from '~/components/mfa';
+import { getUserId } from '~/utils/auth/getUserId.server';
+import { createUserSession } from '~/utils/auth/createUserSession.server';
+import { verifyLogin } from '~/models/user.server';
+import { redirectSafely } from '~/utils/redirectSafely.server';
+import { validateEmail } from '~/utils/validation/validateEmail.server';
+import { workos } from '~/lib/workos.server';
+import { LoginForm, TwoFactorForm } from '~/components/auth';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
@@ -122,27 +121,50 @@ export const action: ActionFunction = async ({ request }) => {
         };
       }
 
-    case 'SMS':
-      const { smsFactorId } = values;
+    case 'sms':
       const smsChallenge = await workos.mfa.challengeFactor({
-        authenticationFactorId: `${smsFactorId}`,
+        authenticationFactorId: `${values.smsFactorId}`,
       });
 
       return {
+        smsFactorId: values.smsFactorId,
         smsChallengeId: smsChallenge.id,
+        totpFactorId: values.totpFactorId,
       };
 
     case 'verify':
-      const { authenticationCode, authenticationChallengeId, userId } = values;
+      const {
+        authenticationCode,
+        authenticationChallengeId,
+        userId,
+        totpFactorId,
+        smsFactorId,
+      } = values;
 
+      if (!authenticationChallengeId) {
+        return json(
+          {
+            totpFactorId,
+            smsFactorId,
+            authenticationChallengeId,
+            errors: {
+              authCode: `Something went wrong. Please try again`,
+            },
+          },
+          { status: 400 },
+        );
+      }
       const response = await workos.mfa.verifyFactor({
         authenticationChallengeId: `${authenticationChallengeId}`,
         code: `${authenticationCode}`,
       });
 
-      if (response.error) {
+      if (!response.valid) {
         return json(
           {
+            totpFactorId,
+            smsFactorId,
+            authenticationChallengeId,
             errors: {
               authCode: `Something went wrong. Please try again`,
             },
@@ -168,25 +190,14 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const actionData = useActionData();
-
-  const hasSmsEnabled = actionData?.smsFactorId;
-  const hasTotpEnabled = actionData?.totpFactorId;
-  const hasMfaEnabled = hasSmsEnabled || hasTotpEnabled;
-  const hasAllFactorsEnabled = hasTotpEnabled && hasSmsEnabled;
+  const hasMfaEnabled = actionData?.smsFactorId || actionData?.totpFactorId;
 
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8 my-20">
-        <h1 className="text-4xl text-center text-gray-800  mb-10">Log in</h1>
+        <h1 className="text-4xl text-center text-gray-800 mb-10">Log in</h1>
         {!hasMfaEnabled && <LoginForm />}
-        {hasAllFactorsEnabled ? (
-          <FormSwitcher />
-        ) : (
-          <>
-            {hasTotpEnabled && <TOTPForm />}
-            {hasSmsEnabled && <SMSForm />}
-          </>
-        )}
+        <TwoFactorForm />
       </div>
     </div>
   );

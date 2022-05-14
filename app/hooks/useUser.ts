@@ -1,4 +1,4 @@
-import type { User } from '~/prisma-actions/user.server';
+import type { User } from '~/models/user.server';
 import { useOptionalUser } from './useOptionalUser';
 
 export const useUser = (): User => {

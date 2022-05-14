@@ -1,6 +1,6 @@
 import type { Password, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { prisma } from '~/global/prisma.server';
+import { prisma } from '~/lib/prisma.server';
 export type { User } from '@prisma/client';
 
 export async function getUserById(userId: User['id']) {
@@ -63,6 +63,20 @@ export async function disable2FA(userId: User['id']) {
     data: {
       smsFactorId: null,
       totpFactorId: null,
+    },
+  });
+}
+
+export async function updatePhoneNumber(
+  userId: User['id'],
+  phoneNumber: string,
+) {
+  return await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      phoneNumber,
     },
   });
 }

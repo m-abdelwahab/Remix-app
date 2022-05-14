@@ -7,14 +7,12 @@ import {
   disable2FA,
   getUserAuthFactors,
   updatePassword,
-} from '~/prisma-actions/user.server';
-import {
-  cookieSessionStorage,
-  displayToast,
-  getSession,
-  requireUser,
-  requireUserId,
-} from '~/utils/session.server';
+} from '~/models/user.server';
+import { cookieSessionStorage } from '~/utils/auth/cookiesSessionStorage.server';
+import { getSession } from '~/utils/auth/getSession.server';
+import { requireUser } from '~/utils/auth/requireUser.server';
+import { requireUserId } from '~/utils/auth/requireUserId.server';
+import { displayToast } from '~/utils/displayToast.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await requireUserId(request);
@@ -70,7 +68,28 @@ export const action: ActionFunction = async ({ request }) => {
       if (!user.totpFactorId && !user.smsFactorId) {
         return redirect('/settings/two-factor-authentication');
       }
-      return await disable2FA(user.id);
+      try {
+        await disable2FA(user.id);
+        displayToast(session, 'You have successfully disabled 2FA', 'success');
+
+        return redirect('/settings', {
+          headers: {
+            'Set-Cookie': await cookieSessionStorage.commitSession(session),
+          },
+        });
+      } catch (error) {
+        displayToast(
+          session,
+          'Something went wrong, please try again',
+          'error',
+        );
+
+        return redirect('/settings', {
+          headers: {
+            'Set-Cookie': await cookieSessionStorage.commitSession(session),
+          },
+        });
+      }
 
     case 'deleteAccount':
       await deleteUser(user.id);

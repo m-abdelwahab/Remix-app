@@ -1,4 +1,4 @@
-import { cookieSessionStorage } from './cookiesSessionStorage';
+import { cookieSessionStorage } from './cookiesSessionStorage.server';
 
 export async function getSession(request: Request) {
   const cookie = request.headers.get('Cookie');

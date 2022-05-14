@@ -1,6 +1,6 @@
-import { getUserById } from '~/prisma-actions/user.server';
-import { logout } from './logout';
-import { requireUserId } from './requireUserId';
+import { getUserById } from '~/models/user.server';
+import { logout } from './logout.server';
+import { requireUserId } from './requireUserId.server';
 
 export async function requireUser(request: Request) {
   const userId = await requireUserId(request);

@@ -1,5 +1,5 @@
-import type { User } from '~/prisma-actions/user.server';
-import { isUser } from '~/utils/isUser';
+import type { User } from '~/models/user.server';
+import { isUser } from '~/utils/validation/isUser';
 import { useMatchesData } from './useMatchesData';
 
 export const useOptionalUser = (): User | undefined => {

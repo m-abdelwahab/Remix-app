@@ -1,7 +1,7 @@
 import { redirect } from '@remix-run/node';
 import { USER_SESSION_KEY } from './constants';
-import { cookieSessionStorage } from './cookiesSessionStorage';
-import { getSession } from './getSession';
+import { cookieSessionStorage } from './cookiesSessionStorage.server';
+import { getSession } from './getSession.server';
 
 export async function createUserSession({
   request,

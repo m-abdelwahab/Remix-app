@@ -1,7 +1,7 @@
-import { getUserById } from '~/prisma-actions/user.server';
-import { getUserId } from './getUserId';
-import type { User } from '~/prisma-actions/user.server';
-import { logout } from './logout';
+import { getUserById } from '~/models/user.server';
+import { getUserId } from './getUserId.server';
+import type { User } from '~/models/user.server';
+import { logout } from './logout.server';
 
 export async function getUser(request: Request): Promise<null | User> {
   const userId = await getUserId(request);

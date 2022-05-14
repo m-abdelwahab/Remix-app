@@ -2,7 +2,8 @@ import { CheckIcon } from '@radix-ui/react-icons';
 import { Form, useActionData, useTransition } from '@remix-run/react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Button } from '~/components/shared';
-import { VerificationInput } from '~/components/mfa';
+import { VerificationInput } from '~/components/auth';
+import { useState } from 'react';
 
 interface DialogProps {
   message: string;
@@ -31,6 +32,8 @@ const Dialog = ({ message }: DialogProps) => {
 };
 
 const EnrollTotp = ({ actionData, transition }) => {
+  const [code, setCode] = useState('');
+
   return (
     <>
       <div className="text-lg  flex items-center mb-3">
@@ -57,7 +60,7 @@ const EnrollTotp = ({ actionData, transition }) => {
       </p>
       <Form method="post">
         <div className="mt-5 mb-10">
-          <VerificationInput />
+          <VerificationInput code={code} setCode={setCode} />
         </div>
         <input
           type="hidden"
@@ -81,6 +84,8 @@ const EnrollTotp = ({ actionData, transition }) => {
 };
 
 const EnrollSMS = ({ actionData, transition }) => {
+  const [code, setCode] = useState('');
+
   return (
     <div className="space-y-3">
       <div className="text-lg  flex items-center mb-3">
@@ -122,7 +127,7 @@ const EnrollSMS = ({ actionData, transition }) => {
 
       <Form method="post">
         <div className="mt-5 mb-10">
-          <VerificationInput />
+          <VerificationInput code={code} setCode={setCode} />
         </div>
         <input
           type="hidden"
@@ -149,6 +154,7 @@ const EnrollSMS = ({ actionData, transition }) => {
 export const Verify = () => {
   const actionData = useActionData();
   const transition = useTransition();
+
   return (
     <div>
       <li

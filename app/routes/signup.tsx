@@ -5,11 +5,11 @@ import type {
 } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import { getUserId } from '~/auth/getUserId';
-import { createUserSession } from '~/auth/createUserSession';
-import { createUser, getUserByEmail } from '~/prisma-actions/user.server';
-import { validateEmail } from '~/utils/validateEmail';
-import { redirectSafely } from '~/utils/redirectSafely';
+import { getUserId } from '~/utils/auth/getUserId.server';
+import { createUserSession } from '~/utils/auth/createUserSession.server';
+import { createUser, getUserByEmail } from '~/models/user.server';
+import { validateEmail } from '~/utils/validation/validateEmail.server';
+import { redirectSafely } from '~/utils/redirectSafely.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
   const userId = await getUserId(request);
