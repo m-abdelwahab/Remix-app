@@ -7,6 +7,8 @@ export const SelectFactor = () => {
   const actionData = useActionData();
   const transition = useTransition();
 
+  console.log(actionData);
+
   return (
     <div>
       <li

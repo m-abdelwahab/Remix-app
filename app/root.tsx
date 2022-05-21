@@ -16,11 +16,13 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { Navbar } from './components/layout/navbar';
 import styles from './styles/app.css';
-import { getSession } from '~/utils/auth/getSession.server';
-import { getUser } from '~/utils/auth/getUser.server';
+import {
+  getSession,
+  getUser,
+  cookieSessionStorage,
+} from '~/utils/session.server';
 import type { ToastMessage } from './utils/displayToast.server';
 import { useEffect } from 'react';
-import { cookieSessionStorage } from './utils/auth/cookiesSessionStorage.server';
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: styles }];

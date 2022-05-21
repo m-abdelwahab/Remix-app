@@ -5,8 +5,7 @@ import type {
 } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
-import { getUserId } from '~/utils/auth/getUserId.server';
-import { createUserSession } from '~/utils/auth/createUserSession.server';
+import { getUserId, createUserSession } from '~/utils/session.server';
 import { createUser, getUserByEmail } from '~/models/user.server';
 import { validateEmail } from '~/utils/validation/validateEmail.server';
 import { redirectSafely } from '~/utils/redirectSafely.server';

@@ -6,7 +6,7 @@ import {
 } from '@remix-run/react';
 import { useState } from 'react';
 import { Button } from '../shared';
-import { VerificationInput } from './verification-input';
+import { VerificationInput } from '../auth/verification-input';
 
 export const TwoFactorForm = () => {
   const submit = useSubmit();
@@ -88,7 +88,8 @@ export const TwoFactorForm = () => {
             <div>
               <h3 className="text-xl mb-3">SMS verification code</h3>
               <p className="mb-3">
-                Use the code that is sent to your registered phone number
+                Use the code that is sent to your registered phone number that
+                ends with
               </p>{' '}
               <Form method="post">
                 <input type="hidden" name="userId" value={actionData?.userId} />

@@ -27,30 +27,22 @@ export async function deleteUser(userId: User['id']) {
   });
 }
 
-export async function enrollTotp(
-  userId: User['id'],
-  totpFactorId: User['totpFactorId'],
-) {
-  return await prisma.user.update({
-    where: {
-      id: userId,
-    },
-    data: {
-      totpFactorId,
-    },
-  });
+interface factors {
+  totpFactorId?: User['totpFactorId'] | undefined;
+  smsFactorId?: User['smsFactorId'] | undefined;
 }
 
-export async function enrollSMS(
+export async function enrollAuthenticationFactor(
   userId: User['id'],
-  smsFactorId: User['smsFactorId'],
+  factors: factors = { totpFactorId: undefined, smsFactorId: undefined },
 ) {
   return await prisma.user.update({
     where: {
       id: userId,
     },
     data: {
-      smsFactorId,
+      totpFactorId: factors.totpFactorId,
+      smsFactorId: factors.smsFactorId,
     },
   });
 }

@@ -5,8 +5,7 @@ import type {
 } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { useActionData } from '@remix-run/react';
-import { getUserId } from '~/utils/auth/getUserId.server';
-import { createUserSession } from '~/utils/auth/createUserSession.server';
+import { getUserId, createUserSession } from '~/utils/session.server';
 import { verifyLogin } from '~/models/user.server';
 import { redirectSafely } from '~/utils/redirectSafely.server';
 import { validateEmail } from '~/utils/validation/validateEmail.server';
@@ -101,6 +100,9 @@ export const action: ActionFunction = async ({ request }) => {
 
         return {
           userId: user.id,
+          phoneNumber: user.phoneNumber!.substring(
+            user.phoneNumber!.length - 3,
+          ),
           smsChallengeId: user.smsFactorId && smsChallenge.id,
           smsFactorId: user.smsFactorId,
         };

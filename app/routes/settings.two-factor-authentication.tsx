@@ -1,10 +1,11 @@
 import { json } from '@remix-run/node';
 import type { ActionFunction, LoaderFunction } from '@remix-run/node';
-import { enrollSMS, enrollTotp, updatePhoneNumber } from '~/models/user.server';
-import { displayToast } from '~/utils/displayToast.server';
-import { getSession } from '~/utils/auth/getSession.server';
-import { requireUser } from '~/utils/auth/requireUser.server';
-import { requireUserId } from '~/utils/auth/requireUserId.server';
+import {
+  enrollAuthenticationFactor,
+  updatePhoneNumber,
+} from '~/models/user.server';
+import { requireUser, requireUserId } from '~/utils/session.server';
+
 import { workos } from '~/lib/workos.server';
 import {
   SelectFactor,
@@ -18,47 +19,54 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export const action: ActionFunction = async ({ request }) => {
   const user = await requireUser(request);
-  const { session } = await getSession(request);
   let formData = await request.formData();
   let { _action, ...values } = Object.fromEntries(formData);
 
+  const {
+    authenticationCode,
+    authenticationChallengeId,
+    authFactorType,
+    qr_code,
+  } = values;
+
   switch (_action) {
     case 'selectFactor':
-      if (!values.authFactorType) {
+      if (!authFactorType) {
         return json(
           { errors: { message: 'This field is required' } },
           { status: 400 },
         );
       }
-      if (values.authFactorType === 'totp') {
+      if (authFactorType === 'totp') {
         try {
-          // TODO: change issuer field to your app name
-          const totpFactor = await workos.mfa.enrollFactor({
+          // change issuer field to your app name
+          const authenticationFactor = await workos.mfa.enrollFactor({
             type: 'totp',
             issuer: 'Remix with WorkOS',
             user: user.email,
           });
 
-          const totpChallenge = await workos.mfa.challengeFactor({
-            authenticationFactorId: totpFactor.id,
+          const authenticationChallenge = await workos.mfa.challengeFactor({
+            authenticationFactorId: authenticationFactor.id,
           });
 
-          return { totpFactor, totpChallenge, step: 1 };
+          return { authenticationFactor, authenticationChallenge, step: 1 };
         } catch (error) {
           return json({ errors: { message: error } }, { status: 400 });
         }
       }
 
-      if (values.authFactorType === 'sms') {
-        setTimeout(() => {}, 3000);
-        return { smsFactor: true, step: 1 };
-      }
+      return { setupSMS: true, step: 1 };
 
     case 'phoneNumber':
-      const { userId, phoneNumber } = values;
+      const { phoneNumber } = values;
       if (!phoneNumber) {
         return json(
-          { errors: { message: 'You need to provide a phone number' } },
+          {
+            setupSMS: true,
+            step: 1,
+            errors: { message: 'You need to provide a phone number' },
+          },
           { status: 400 },
         );
       }
@@ -73,26 +81,22 @@ export const action: ActionFunction = async ({ request }) => {
           authenticationFactorId: smsFactor.id,
         });
 
-        // persistPhoneNumber
-        // await updatePhoneNumber(`${userId}`, `${phoneNumber}`);
+        await updatePhoneNumber(`${user.id}`, `${phoneNumber}`);
 
-        return { smsFactor, smsChallenge, step: 1 };
+        return { setupSMS: true, smsFactor, smsChallenge, step: 1 };
       } catch (error) {
-        displayToast(
-          session,
-          `Something went wrong, please try again`,
-          'success',
+        return json(
+          {
+            setupSMS: true,
+            authFactorType: 'sms',
+            step: 1,
+            errors: { message: 'Something went wrong, please try again' },
+          },
+          { status: 400 },
         );
-        return null;
       }
 
     case 'verify':
-      const {
-        authenticationCode,
-        authenticationChallengeId,
-        isSMSVerification,
-      } = values;
-
       if (authenticationCode.toString().length !== 6) {
         return json(
           { errors: { title: 'Code must be 6 digits' } },
@@ -107,20 +111,35 @@ export const action: ActionFunction = async ({ request }) => {
         });
 
         if (response.valid) {
-          if (isSMSVerification === 'true') {
-            await enrollSMS(
-              user.id,
-              response.challenge.authentication_factor_id,
-            );
-          } else {
-            await enrollTotp(
-              user.id,
-              response.challenge.authentication_factor_id,
-            );
-          }
+          await enrollAuthenticationFactor(user.id, {
+            smsFactorId:
+              authFactorType === 'sms'
+                ? response.challenge.authentication_factor_id
+                : undefined,
+            totpFactorId:
+              authFactorType === 'totp'
+                ? response.challenge.authentication_factor_id
+                : undefined,
+          });
+          return { step: 2 };
         }
-        return { response, step: 2 };
+
+        return {
+          errors: { authCode: 'Something went wrong' },
+          authenticationFactor: {
+            type: authFactorType === 'totp' ? 'totp' : null,
+            totp: {
+              qr_code,
+            },
+          },
+          setupSMS: authFactorType === 'sms',
+          authenticationChallenge: {
+            id: authenticationChallengeId,
+          },
+          step: 1,
+        };
       } catch (error) {
+        console.log(error);
         return json({ errors: { message: error } }, { status: 400 });
       }
   }

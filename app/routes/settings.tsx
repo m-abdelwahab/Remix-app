@@ -8,10 +8,12 @@ import {
   getUserAuthFactors,
   updatePassword,
 } from '~/models/user.server';
-import { cookieSessionStorage } from '~/utils/auth/cookiesSessionStorage.server';
-import { getSession } from '~/utils/auth/getSession.server';
-import { requireUser } from '~/utils/auth/requireUser.server';
-import { requireUserId } from '~/utils/auth/requireUserId.server';
+import {
+  cookieSessionStorage,
+  getSession,
+  requireUser,
+  requireUserId,
+} from '~/utils/session.server';
 import { displayToast } from '~/utils/displayToast.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
