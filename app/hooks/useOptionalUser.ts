@@ -1,5 +1,5 @@
 import type { User } from '~/models/user.server';
-import { isUser } from '~/utils/validation/isUser';
+import { isUser } from '~/utils/validation.server';
 import { useMatchesData } from './useMatchesData';
 
 export const useOptionalUser = (): User | undefined => {

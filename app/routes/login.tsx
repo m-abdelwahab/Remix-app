@@ -8,7 +8,7 @@ import { useActionData } from '@remix-run/react';
 import { getUserId, createUserSession } from '~/utils/session.server';
 import { verifyLogin } from '~/models/user.server';
 import { redirectSafely } from '~/utils/redirectSafely.server';
-import { validateEmail } from '~/utils/validation/validateEmail.server';
+import { validateEmail, validatePassword } from '~/utils/validation.server';
 import { workos } from '~/lib/workos.server';
 import { LoginForm, TwoFactorForm } from '~/components/auth';
 
@@ -36,13 +36,16 @@ export const action: ActionFunction = async ({ request }) => {
       const email = formData.get('email') as string;
       const password = formData.get('password') as string;
 
-      if (!validateEmail(email!)) {
+      if (!validateEmail(email)) {
         return json<ActionData>(
           { errors: { email: 'Email is invalid' } },
           { status: 400 },
         );
       }
 
+      // TODO: password validation
+      const res = validatePassword(password);
+      console.log(res);
       if (typeof password !== 'string') {
         return json<ActionData>(
           { errors: { password: 'Password is required' } },
@@ -191,15 +194,14 @@ export const meta: MetaFunction = () => {
 };
 
 export default function LoginPage() {
-  const actionData = useActionData();
+  const actionData = useActionData(); // initially undefined
   const hasMfaEnabled = actionData?.smsFactorId || actionData?.totpFactorId;
 
   return (
     <div className="flex min-h-full flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-8 my-20">
         <h1 className="text-4xl text-center text-gray-800 mb-10">Log in</h1>
-        {!hasMfaEnabled && <LoginForm />}
-        <TwoFactorForm />
+        {hasMfaEnabled ? <LoginForm /> : <TwoFactorForm />}
       </div>
     </div>
   );

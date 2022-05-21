@@ -7,7 +7,7 @@ import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react';
 import { getUserId, createUserSession } from '~/utils/session.server';
 import { createUser, getUserByEmail } from '~/models/user.server';
-import { validateEmail } from '~/utils/validation/validateEmail.server';
+import { validateEmail } from '~/utils/validation.server';
 import { redirectSafely } from '~/utils/redirectSafely.server';
 
 export const loader: LoaderFunction = async ({ request }) => {
